@@ -54,26 +54,47 @@ export const PresentationTimer = ({ currentSlide, totalSlides, onTimeUpdate }: P
 
   const timerStatus = getTimerStatus();
 
+  const expectedTimePerSlide = 600 / totalSlides;
+  const expectedTimeForCurrentSlide = expectedTimePerSlide;
+  const timeSpentOnCurrentSlide = expectedTimePerSlide - (timeLeft - (totalSlides - currentSlide - 1) * expectedTimePerSlide);
+  const progressPercentage = Math.min(Math.max((timeSpentOnCurrentSlide / expectedTimeForCurrentSlide) * 100, 0), 100);
+
   return (
-    <div className="flex items-center gap-4">
-      <div className={`text-2xl font-mono font-bold timer-${timerStatus}`}>
-        {formatTime(timeLeft)}
+    <div className="flex flex-col items-center gap-2">
+      <div className="flex items-center gap-4">
+        <div className={`text-2xl font-mono font-bold timer-${timerStatus}`}>
+          {formatTime(timeLeft)}
+        </div>
+        <button
+          onClick={() => setIsRunning(!isRunning)}
+          className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded hover:opacity-80 transition-opacity"
+        >
+          {isRunning ? 'Pause' : 'Start'}
+        </button>
+        <button
+          onClick={() => {
+            setTimeLeft(600);
+            setIsRunning(false);
+          }}
+          className="px-3 py-1 text-sm bg-secondary text-secondary-foreground rounded hover:opacity-80 transition-opacity"
+        >
+          Reset
+        </button>
       </div>
-      <button
-        onClick={() => setIsRunning(!isRunning)}
-        className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded hover:opacity-80 transition-opacity"
-      >
-        {isRunning ? 'Pause' : 'Start'}
-      </button>
-      <button
-        onClick={() => {
-          setTimeLeft(600);
-          setIsRunning(false);
-        }}
-        className="px-3 py-1 text-sm bg-secondary text-secondary-foreground rounded hover:opacity-80 transition-opacity"
-      >
-        Reset
-      </button>
+      
+      {/* Progress bar for current slide */}
+      <div className="w-48 bg-muted rounded-full h-2">
+        <div 
+          className={`h-2 rounded-full transition-all duration-300 ${
+            timerStatus === 'danger' ? 'bg-danger' : 
+            timerStatus === 'warning' ? 'bg-warning' : 'bg-success'
+          }`}
+          style={{ width: `${progressPercentage}%` }}
+        />
+      </div>
+      <div className="text-xs text-muted-foreground">
+        Slide {currentSlide + 1} progress ({formatTime(expectedTimePerSlide)} suggested)
+      </div>
     </div>
   );
 };
